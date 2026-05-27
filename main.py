@@ -1,14 +1,17 @@
 import json
 import heapq
+#se importa heapq para la cola de prioridad dentro de Dijkstra y json para la persistencia de los datos 
 
 
 archivo = "red_transporte.json"
-
+#nombre del archivo donde se deberia guaradr todo 
 
 class RedTransporte:
     def __init__(self):
         self.grafo = {}
 
+
+#para anadir estaciones si aun no existen
     def anadir_estacion(self, estacion):
         if estacion not in self.grafo:
             self.grafo[estacion] = {}
@@ -16,6 +19,7 @@ class RedTransporte:
         else:
             print("Esa estación ya existe.")
 
+#para anadir conexiones entre estaciones
     def anadir_conexion(self, origen, destino, minutos):
         if origen not in self.grafo:
             self.anadir_estacion(origen)
@@ -28,6 +32,7 @@ class RedTransporte:
 
         print("Conexión añadida correctamente.")
 
+#te muestra la red completa con todas las conexiones y estaciones actuales
     def mostrar_red(self):
         if not self.grafo:
             print("La red está vacía.")
@@ -37,6 +42,8 @@ class RedTransporte:
             print(f"\n{estacion}:")
             for destino, minutos in conexiones.items():
                 print(f"  -> {destino}: {minutos} min")
+
+# Comprueba que origen y destino existan en la red
 
     def dijkstra(self, origen, destino):
         if origen not in self.grafo or destino not in self.grafo:
@@ -65,7 +72,25 @@ class RedTransporte:
                     heapq.heappush(cola, (nuevo_tiempo, vecino, nueva_ruta))
 
         return None
+    
+    def ruta_con_intermedia(self, origen, intermedia, destino):
+        # EXTRA : Calcula una ruta con una estacion obligatoria
 
+        primera_parte = self.dijkstra(origen, intermedia)
+        segunda_parte = self.dijkstra(intermedia, destino)
+
+        if primera_parte is None or segunda_parte is None:
+            return None
+
+        tiempo1, ruta1 = primera_parte
+        tiempo2, ruta2 = segunda_parte
+
+        ruta_total = ruta1 + ruta2[1:]
+        tiempo_total = tiempo1 + tiempo2
+
+        return tiempo_total, ruta_total
+
+#persistencia de datos en donde puedes guardar y cargar la red actual
     def guardar_red(self):
         with open(archivo, "w", encoding="utf-8") as f:
             json.dump(self.grafo, f, indent=4, ensure_ascii=False)
@@ -79,6 +104,7 @@ class RedTransporte:
         except FileNotFoundError:
             print("No se encontró el archivo. Se empezará con una red vacía.")
 
+#borra la red actual completamente 
     def reiniciar_red(self):
         self.grafo = {}
         print("Red reiniciada correctamente.")
